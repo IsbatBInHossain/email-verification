@@ -66,6 +66,12 @@ export default {
     }
   },
   methods: {
+    generateToken() {
+      return (
+        Math.random().toString(36).substring(2, 10) +
+        Math.random().toString(36).substring(2, 10)
+      )
+    },
     async submitForm() {
       const userData = {
         email: this.email,
@@ -77,18 +83,31 @@ export default {
           `${import.meta.env.VITE_BACKEND_URL}/api/login`,
           userData
         )
+        console.log(response)
 
-        console.log(response.data.message)
+        // Check activation status regardless of the response status
+        if (response.data.activated) {
+          const authToken = this.generateToken()
+          localStorage.setItem('authToken', authToken)
+          this.$router.push('/')
+        } else {
+          this.$router.push('/activate')
+        }
       } catch (error) {
         console.error('Error submitting form:', error)
-
-        if (error.response.status === 403) {
-          // Handle account not activated (e.g., show a message or redirect)
-          console.log('Account not activated. Redirecting to activation page.')
-          // Add your logic to redirect or show a message to the user
+        if (error.response) {
+          // Server responded with an error status code
+          if (error.response.status === 403) {
+            // Handle account not activated
+            console.log(
+              'Account not activated. Redirecting to activation page.'
+            )
+          } else {
+            this.error = error.response.data.error || 'Internal Server Error'
+          }
         } else {
-          // Handle other errors
-          this.error = error.response.data.error || 'Internal Server Error'
+          // Network error (e.g., the server is not reachable)
+          this.error = 'Network error. Please try again later.'
         }
       }
     },

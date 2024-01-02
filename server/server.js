@@ -5,6 +5,7 @@ import bodyParser from 'body-parser'
 import dotenv from 'dotenv'
 import cors from 'cors'
 import bcrypt from 'bcrypt'
+import sendMail from './utils/sendMail.js'
 
 dotenv.config()
 
@@ -57,7 +58,27 @@ async function main() {
         await newUser.save()
 
         const activationLink = `${process.env.FRONTEND_URL}/activate/${activationToken}`
-        console.log(activationLink)
+        const message = `
+                <h2>Hello ${newUser.firstName}</h2>
+
+                <p>Please click the url below to activate your account.</p>
+                <a href="${activationLink}">${activationLink}</a>
+
+                <p>Best wishes...</p>
+          `
+        const options = {
+          subject: 'Email Verification',
+          message,
+          sendTo: newUser.email,
+          sentFrom: process.env.EMAIL_USER,
+        }
+
+        try {
+          const info = await sendMail(options)
+          console.log(info)
+        } catch (err) {
+          console.error(err)
+        }
 
         res.status(200).json({ message: 'User signed up.' })
       } catch (error) {
@@ -81,7 +102,7 @@ async function main() {
       user.activationToken = null
       await user.save()
 
-      res.status(200).json({ message: 'Account activated successfully' })
+      res.status(200).json({ message: 'Account activated successfully', user })
     } catch (error) {
       console.error(error)
       res.status(500).json({ error: 'Internal Server Error' })
@@ -103,10 +124,10 @@ async function main() {
       const passwordCorrect = await bcrypt.compare(password, user.password)
 
       if (!passwordCorrect) {
-        return res.status(401).json({ error: 'Invalid credentials' })
+        return res.status(401).json({ error: 'Wrong password' })
       }
 
-      res.status(200).json({ message: 'Login successful. Welcome!' })
+      res.status(200).json(user)
     } catch (error) {
       console.error(error)
       res.status(500).json({ error: 'Internal Server Error' })
