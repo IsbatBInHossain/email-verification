@@ -69,7 +69,7 @@ export default {
         )
         this.clearForm()
 
-        // TODO: Reroute to activation page
+        this.$router.push('/activate/0')
       } catch (err) {
         console.error('Error submitting form:', err)
         this.error = err

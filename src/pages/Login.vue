@@ -66,12 +66,6 @@ export default {
     }
   },
   methods: {
-    generateToken() {
-      return (
-        Math.random().toString(36).substring(2, 10) +
-        Math.random().toString(36).substring(2, 10)
-      )
-    },
     async submitForm() {
       const userData = {
         email: this.email,
@@ -83,15 +77,13 @@ export default {
           `${import.meta.env.VITE_BACKEND_URL}/api/login`,
           userData
         )
-        console.log(response)
+        console.log(response.data)
 
         // Check activation status regardless of the response status
-        if (response.data.activated) {
-          const authToken = this.generateToken()
-          localStorage.setItem('authToken', authToken)
+        if (response.data && response.data.token) {
           this.$router.push('/')
         } else {
-          this.$router.push('/activate')
+          this.$router.push('/activate/0')
         }
       } catch (error) {
         console.error('Error submitting form:', error)
