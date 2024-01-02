@@ -2,76 +2,40 @@
   <div class="bg-slate-100 p-8 rounded shadow-md w-96">
     <h2 class="text-2xl font-semibold mb-4">Sign Up</h2>
     <form @submit.prevent="submitForm">
-      <div class="mb-4">
-        <label for="email" class="block text-sm font-medium text-gray-600"
-          >Email</label
-        >
+      <div v-for="(_, key) in userData" :key="key" class="mb-4">
+        <label :for="key" class="block text-sm font-medium text-gray-600">{{
+          key
+        }}</label>
         <input
-          type="email"
-          id="email"
-          name="email"
+          :type="key === 'password' ? 'password' : 'text'"
+          :id="key"
+          :name="key"
           class="mt-1 p-2 w-full border rounded-md"
-          v-model="email"
+          v-model="userData[key]"
         />
       </div>
-      <div class="mb-4">
-        <label for="firstName" class="block text-sm font-medium text-gray-600"
-          >First Name</label
-        >
-        <input
-          type="text"
-          id="firstName"
-          name="firstName"
-          class="mt-1 p-2 w-full border rounded-md"
-          v-model="firstName"
-        />
-      </div>
-      <div class="mb-4">
-        <label for="lastName" class="block text-sm font-medium text-gray-600"
-          >Last Name</label
-        >
-        <input
-          type="text"
-          id="lastName"
-          name="lastName"
-          class="mt-1 p-2 w-full border rounded-md"
-          v-model="lastName"
-        />
-      </div>
-      <div class="mb-4">
-        <label
-          for="mobileNumber"
-          class="block text-sm font-medium text-gray-600"
-          >Mobile Number</label
-        >
-        <input
-          type="tel"
-          id="mobileNumber"
-          name="mobileNumber"
-          class="mt-1 p-2 w-full border rounded-md"
-          v-model="mobileNumber"
-        />
-      </div>
-      <div class="mb-4">
-        <label for="password" class="block text-sm font-medium text-gray-600"
-          >Password</label
-        >
-        <input
-          type="password"
-          id="password"
-          name="password"
-          class="mt-1 p-2 w-full border rounded-md"
-          v-model="password"
-        />
-      </div>
+      <p v-if="error" class="text-red-600">
+        Error submitting form: {{ error }}
+      </p>
       <button
         type="submit"
         class="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600"
+        :class="
+          isButtonDisabled
+            ? 'cursor-not-allowed bg-gray-500'
+            : 'hover:bg-blue-600'
+        "
         :disabled="isButtonDisabled"
       >
         Sign Up
       </button>
     </form>
+    <p class="mt-4 text-gray-600 text-sm">
+      Already have an account?
+      <router-link to="/login" class="text-blue-500 hover:underline"
+        >Go to login</router-link
+      >
+    </p>
   </div>
 </template>
 
@@ -79,51 +43,46 @@
 import axios from 'axios'
 
 export default {
-  computed: {
-    isButtonDisabled() {
-      return (
-        !this.email ||
-        !this.firstName ||
-        !this.lastName ||
-        !this.mobileNumber ||
-        !this.password
-      )
-    },
-  },
   data() {
     return {
-      email: '',
-      firstName: '',
-      lastName: '',
-      mobileNumber: '',
-      password: '',
+      userData: {
+        email: '',
+        firstName: '',
+        lastName: '',
+        mobileNumber: '',
+        password: '',
+      },
+      error: null,
     }
+  },
+  computed: {
+    isButtonDisabled() {
+      return !Object.values(this.userData).every(value => value)
+    },
   },
   methods: {
     async submitForm() {
-      const userData = {
-        email: this.email,
-        firstName: this.firstName,
-        lastName: this.lastName,
-        mobileNumber: this.mobileNumber,
-        password: this.password,
-      }
       try {
         await axios.post(
           `${import.meta.env.VITE_BACKEND_URL}/api/signup/`,
-          userData
+          this.userData
         )
         this.clearForm()
-      } catch (error) {
-        console.error('Error submitting form:', error)
+
+        // TODO: Reroute to activation page
+      } catch (err) {
+        console.error('Error submitting form:', err)
+        this.error = err
       }
     },
     clearForm() {
-      this.email = ''
-      this.firstName = ''
-      this.lastName = ''
-      this.mobileNumber = ''
-      this.password = ''
+      this.userData = {
+        email: '',
+        firstName: '',
+        lastName: '',
+        mobileNumber: '',
+        password: '',
+      }
     },
   },
 }

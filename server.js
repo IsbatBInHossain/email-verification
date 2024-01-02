@@ -97,14 +97,13 @@ async function main() {
       if (!user) {
         return res.status(404).json({ error: 'User not found' })
       }
+      if (!user.activated) {
+        return res.status(403).json({ error: 'Account not activated' })
+      }
       const passwordCorrect = await bcrypt.compare(password, user.password)
 
       if (!passwordCorrect) {
         return res.status(401).json({ error: 'Invalid credentials' })
-      }
-
-      if (!user.activated) {
-        return res.status(403).json({ error: 'Account not activated' })
       }
 
       res.status(200).json({ message: 'Login successful. Welcome!' })
