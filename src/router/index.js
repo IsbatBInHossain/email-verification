@@ -1,5 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import axios from 'axios'
+// import jwt from 'jsonwebtoken'
+
+// parseJWT
+const parseJwt = token => {
+  if (!token) {
+    return
+  }
+  const base64Url = token.split('.')[1]
+  const base64 = base64Url.replace('-', '+').replace('_', '/')
+  return JSON.parse(window.atob(base64))
+}
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -11,13 +22,11 @@ export const router = createRouter({
       beforeEnter: async (to, from, next) => {
         const isAuthenticated = async () => {
           try {
-            // Make a request to the protected route to check if the user is authenticated
-            const response = await axios.get(
-              `${import.meta.env.VITE_BACKEND_URL}/protected`,
-              { withCredentials: true }
-            )
+            // Get Auth token from localStorage
+            const token = localStorage.getItem('authToken')
+            const data = parseJwt(token)
 
-            return response.data.isActivated
+            return data.isActivated
           } catch (error) {
             console.error('Error checking authentication:', error)
             return false
@@ -43,9 +52,14 @@ export const router = createRouter({
       component: () => import('../pages/Login.vue'),
     },
     {
-      path: '/activate/:token',
+      path: '/activate',
       name: 'Activation',
       component: () => import('../pages/Activation.vue'),
+    },
+    {
+      path: '/activate/:token',
+      name: 'ActivationConfirm',
+      component: () => import('../pages/ActivationConfirm.vue'),
     },
     {
       path: '/:catchAll(.*)',

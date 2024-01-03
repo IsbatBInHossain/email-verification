@@ -110,6 +110,21 @@ app.get('/api/activate/:token', async (req, res) => {
     user.activationToken = null
     await user.save()
 
+    // Generate JWT
+    const authToken = jwt.sign(
+      { id: user._id, isActivated: user.activated },
+      process.env.VITE_JWT_SECRET,
+      {
+        expiresIn: '1h',
+      }
+    )
+
+    res.cookie('token', authToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'None',
+    })
+
     res.status(200).json({ message: 'Account activated successfully', user })
   } catch (error) {
     console.error(error)
@@ -136,9 +151,13 @@ app.post('/api/login', async (req, res) => {
     }
 
     // Generate JWT
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: '1h',
-    })
+    const token = jwt.sign(
+      { id: user._id, isActivated: user.activated },
+      process.env.VITE_JWT_SECRET,
+      {
+        expiresIn: '1h',
+      }
+    )
 
     res.cookie('token', token, {
       httpOnly: true,
@@ -153,35 +172,6 @@ app.post('/api/login', async (req, res) => {
   }
 })
 
-// Protected route to check if the user is activated
-app.get('/protected', async (req, res) => {
-  try {
-    // Check if the user is authenticated
-    console.log(req.cookies)
-    const token = req.cookies.token
-    if (!token) {
-      res.status(401)
-      throw new Error("You're not logged in, please log in.")
-    }
-
-    // Verify token
-    const verified = jwt.verify(token, process.env.JWT_SECRET)
-
-    // Get user id
-    const user = await User.findById(verified.id).select('-password')
-    if (!user) {
-      res.status(401)
-      throw new Error('User not found')
-    }
-
-    // Check if the user is activated
-    const isActivated = user.activated
-
-    res.status(200).json({ isActivated })
-  } catch (error) {
-    res.status(401).json({ error: error.message })
-  }
-})
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`)

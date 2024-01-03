@@ -1,41 +1,27 @@
 <template>
-  <div>
-    <h2>Account Activation</h2>
-    <p>{{ activationStatus }}</p>
-    <router-link v-if="activationComplete" to="/">Go to Home</router-link>
+  <div class="text-black bg-white p-8 rounded-lg shadow-md">
+    <h2 class="text-2xl font-bold mb-4">Account Activation</h2>
+    <p class="text-base mb-6">
+      An activation link has been sent to your email. Please activate your
+      account before proceeding.
+    </p>
+    <div class="flex flex-col space-y-4">
+      <router-link
+        class="bg-gray-300 hover:bg-gray-400 text-black py-2 px-4 rounded transition duration-300"
+        to="/login"
+      >
+        Go to Login
+      </router-link>
+      <router-link
+        class="bg-gray-300 hover:bg-gray-400 text-black py-2 px-4 rounded transition duration-300"
+        to="/sign-up"
+      >
+        Go to Sign Up
+      </router-link>
+    </div>
   </div>
 </template>
 
 <script>
-import axios from 'axios'
-
-export default {
-  data() {
-    return {
-      activationStatus: 'Activating your account...',
-      activationComplete: false,
-    }
-  },
-  async created() {
-    const token = this.$route.params.token
-
-    if (token) {
-      try {
-        // Send a request to the backend to activate the account
-        await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/api/activate/${token}`
-        )
-
-        this.activationStatus = 'Your account is activated. You can now log in.'
-        this.activationComplete = true
-      } catch (error) {
-        console.error('Error activating account:', error)
-        this.activationStatus = 'Error activating your account.'
-      }
-    } else {
-      // Handle the case where the token is missing
-      this.activationStatus = 'Invalid activation link.'
-    }
-  },
-}
+export default {}
 </script>

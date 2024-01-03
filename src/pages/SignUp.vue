@@ -69,7 +69,7 @@ export default {
         )
         this.clearForm()
 
-        this.$router.push('/activate/0')
+        this.$router.push('/activate')
       } catch (err) {
         console.error('Error submitting form:', err)
         this.error = err

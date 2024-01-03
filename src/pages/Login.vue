@@ -77,13 +77,13 @@ export default {
           `${import.meta.env.VITE_BACKEND_URL}/api/login`,
           userData
         )
-        console.log(response.data)
 
         // Check activation status regardless of the response status
         if (response.data && response.data.token) {
+          localStorage.setItem('authToken', response.data.token)
           this.$router.push('/')
         } else {
-          this.$router.push('/activate/0')
+          this.$router.push('/activate')
         }
       } catch (error) {
         console.error('Error submitting form:', error)

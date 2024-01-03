@@ -48,10 +48,12 @@ This will simultaneously start frontend and backend server. Visit http://localho
 
     Frontend:
         Vue.js
+        TailwindCSS
 
     Backend:
         Express.js
         MongoDB
+        JWT
 
     Email Service:
         Nodemailer
