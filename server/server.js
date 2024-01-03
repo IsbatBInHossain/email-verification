@@ -121,6 +121,8 @@ app.get('/api/activate/:token', async (req, res) => {
 
     res.cookie('token', authToken, {
       httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'None',
     })
 
     res.status(200).json({ message: 'Account activated successfully', user })
